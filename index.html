@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#070B1E"><meta name="description" content="Familiens fælles læsemål – send raketten mod præmien, én bog ad gangen.">
+  <title>Familiens Læseraket</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="stars" aria-hidden="true"></div><canvas id="confetti" aria-hidden="true"></canvas>
+  <main class="shell">
+    <header><div><h1>Familiens Læseraket</h1><p>1. august 2026 → 1. august 2027</p></div><nav><button class="tab active" data-view="home">Forside</button><button class="tab" data-view="stats">Statistik</button><button id="mute" class="icon" title="Lyd til/fra">🔊</button></nav></header>
+    <div id="sync" class="sync" role="status">Forbinder til familiens fælles logbog…</div>
+    <section id="home"></section><section id="stats" hidden></section>
+    <footer><span id="storage-copy">Data gemmes både på denne enhed og i familiens fælles lager</span> · Fælles mål: 20.000 sider · Personligt mål: 5.000 sider</footer>
+  </main>
+  <div id="overlay" class="overlay" hidden><div class="goal-card"><div class="party">🎉</div><h2>MÅLET ER NÅET!</h2><p>20.000 sider læst som familie. Vildt godt gået, Marie, Jacob, Alfred og Hugo.</p><small>PRÆMIEN ER JERES</small><strong id="overlay-prize"></strong><button id="celebrate">Fejr videre</button></div></div>
+  <script type="module" src="/app.js"></script>
+</body></html>
