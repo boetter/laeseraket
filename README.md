@@ -1,5 +1,28 @@
 # Handoff: Familiens Læseraket (family reading-goal app)
 
+## Den deploybare app
+
+Appen er nu implementeret som en statisk, responsiv webapp med en lille Netlify Function. Den bruger **Netlify Blobs** som familiens fælles lager og browserens `localStorage` som offline-kopi. Det betyder, at der ikke kræves Neon, en separat database eller brugerlogin. Hvis Blob-kaldet midlertidigt fejler, kan appen stadig bruges på den aktuelle enhed, og den forsøger igen ved næste ændring eller genindlæsning.
+
+> Appen har med vilje ingen loginbeskyttelse. Enhver med sidens adresse kan derfor se og ændre logbogen. Brug en svært gættelig Netlify-adresse, og del den kun med familien.
+
+### Lokal udvikling
+
+```bash
+npm install
+npm run dev
+```
+
+`netlify dev` starter både den statiske side og Blob-funktionen. En almindelig statisk filserver kan vise designet, men `/api/state` vil da være offline, så kun den lokale browserkopi bruges.
+
+### Deploy på Netlify
+
+1. Push repository til GitHub/GitLab, og vælg **Add new site → Import an existing project** i Netlify.
+2. Netlify læser automatisk `netlify.toml`: build-kommandoen er `npm run build`, publiceringsmappen er `dist`, og function-mappen er `netlify/functions`.
+3. Deploy. Der skal ikke oprettes miljøvariabler eller en ekstern database.
+
+Den første browser med eksisterende lokale data uploader dem, hvis det fælles lager endnu er tomt. Derefter hentes den fælles logbog ved hver sideindlæsning. Appen viser altid synkroniseringsstatus øverst.
+
 ## Overview
 A single-page app for one family (Marie, Jacob, Alfred, Hugo) tracking pages read from **1 Aug 2026 to 1 Aug 2027**. Shared goal: **20,000 pages** (family) / **5,000 pages** per person. Members log finished books; an animated rocket travels along a track toward a prize planet as the family total grows. Milestones (25/50/75/100%) trigger confetti + sound; reaching 100% reveals the family's self-chosen prize. All UI copy is Danish — keep strings verbatim as listed below.
 
