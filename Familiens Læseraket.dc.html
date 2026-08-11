@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;}
+html,body{margin:0;padding:0;background:#0B1026;}
+body{font-family:'Atkinson Hyperlegible',system-ui,sans-serif;color:#EAF0FF;}
+a{color:#FF8A5C;} a:hover{color:#FFB08A;}
+input::placeholder{color:rgba(234,240,255,.35);}
+@keyframes twinkle{0%,100%{opacity:.12}50%{opacity:.9}}
+@keyframes bob{0%,100%{transform:translateY(-4px)}50%{transform:translateY(5px)}}
+@keyframes flameFlick{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.5) scaleY(.72)}}
+@keyframes floatUp{0%{opacity:0;transform:translate(-50%,12px)}15%{opacity:1}100%{opacity:0;transform:translate(-50%,-56px)}}
+@keyframes popIn{from{transform:scale(.75);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 18px 2px rgba(124,92,255,.35)}50%{box-shadow:0 0 34px 10px rgba(124,92,255,.6)}}
+@keyframes dashMove{to{background-position-x:-24px}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:linear-gradient(180deg,#070B1E 0%,#0B1026 45%,#1B2450 100%);position:relative;overflow-x:hidden">
+  <div style="position:absolute;inset:0;pointer-events:none">
+    <sc-for list="{{stars}}" as="s" hint-placeholder-count="0">
+      <div style="position:absolute;left:{{s.l}};top:{{s.t}};width:{{s.w}};height:{{s.w}};border-radius:50%;background:#FFFFFF;animation:twinkle {{s.du}} ease-in-out {{s.dl}} infinite"></div>
+    </sc-for>
+  </div>
+  <canvas ref="{{canvasRef}}" style="position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60"></canvas>
+  <div style="max-width:1180px;margin:0 auto;padding:26px 32px 64px;position:relative">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:27px;letter-spacing:.2px">Familiens Læseraket</div>
+        <div style="font-size:14px;color:#93A0C9;margin-top:2px">1. august 2026 → 1. august 2027</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onClick="{{goHome}}" style="{{tabHomeS}}">Forside</button>
+        <button onClick="{{goStats}}" style="{{tabStatsS}}">Statistik</button>
+        <button onClick="{{toggleMute}}" title="Lyd til/fra" style="width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);cursor:pointer;font-size:16px;margin-left:6px">{{muteIcon}}</button>
+      </div>
+    </div>
+
+    <sc-if value="{{isHome}}" hint-placeholder-val="{{ true }}">
+    <div>
+      <div style="text-align:center;margin-top:42px">
+        <div style="font-family:Fredoka,sans-serif;font-weight:700;font-size:88px;line-height:1;letter-spacing:1px;text-shadow:0 0 44px rgba(255,107,53,.3)">{{totalDisplay}}</div>
+        <div style="font-size:17px;color:#93A0C9;margin-top:8px">af {{goalFmt}} sider · {{pctLabel}} af målet</div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+          <span style="{{paceChipS}}">{{paceText}}</span>
+          <span style="{{dimChipS}}">{{dayText}}</span>
+          <span style="{{dimChipS}}">{{dailyNeedText}}</span>
+        </div>
+        <sc-if value="{{noBooks}}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:18px;font-size:15px;color:#B9C3E6">Endnu ingen bøger i loggen — tast den første og send raketten afsted.</div>
+        </sc-if>
+      </div>
+
+      <div style="position:relative;height:216px;margin-top:40px">
+        <div style="position:absolute;left:70px;right:86px;top:106px;height:3px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 10px,transparent 10px 24px);animation:dashMove 1.7s linear infinite"></div>
+        <div style="position:absolute;left:70px;top:105px;height:5px;border-radius:4px;background:linear-gradient(90deg,rgba(255,107,53,.15),#FF6B35);box-shadow:0 0 14px rgba(255,107,53,.55);width:{{fillW}};transition:width 1.2s cubic-bezier(.22,1,.36,1)"></div>
+        <div style="position:absolute;left:28px;top:82px;width:84px;text-align:center">
+          <div style="width:52px;height:52px;border-radius:50%;margin:0 auto;background:radial-gradient(circle at 35% 30%,#7DE8A4,#2E9E6B 55%,#1C5E45)"></div>
+          <div style="font-size:12px;color:#93A0C9;margin-top:8px">Start<br>1. aug 2026</div>
+        </div>
+        <sc-for list="{{milestones}}" as="m" hint-placeholder-count="0">
+          <div style="position:absolute;top:98px;left:{{m.left}};transform:translateX(-50%);text-align:center">
+            <div style="{{m.dotS}}"></div>
+            <div style="font-size:12.5px;color:#93A0C9;margin-top:9px;font-weight:700">{{m.label}}</div>
+            <div style="font-size:11px;color:#5B6693">{{m.pctLabel}}</div>
+          </div>
+        </sc-for>
+        <div style="position:absolute;right:20px;top:44px;width:132px;text-align:center">
+          <div style="position:relative;width:78px;height:78px;margin:0 auto">
+            <div style="position:absolute;left:50%;top:-20px;transform:translateX(-50%);width:3px;height:26px;background:#EAF0FF;border-radius:2px"></div>
+            <div style="position:absolute;left:50%;top:-20px;width:24px;height:15px;background:#FF6B35;clip-path:polygon(0 0,100% 50%,0 100%)"></div>
+            <div style="width:78px;height:78px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#B79CFF,#7C5CFF 55%,#4630A8);animation:glowPulse 3.2s ease-in-out infinite"></div>
+            <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-16deg);width:112px;height:28px;border:3px solid rgba(255,255,255,.28);border-radius:50%;pointer-events:none"></div>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:#93A0C9;letter-spacing:.1em;text-transform:uppercase;font-weight:700">Præmien</div>
+          <sc-if value="{{editPrize}}" hint-placeholder-val="{{ false }}">
+            <input value="{{prizeDraft}}" onChange="{{onPrizeDraft}}" onBlur="{{savePrize}}" onKeyDown="{{prizeKey}}" autoFocus="{{ true }}" placeholder="Fx en tur i Tivoli" style="margin-top:6px;width:130px;background:rgba(255,255,255,.08);border:1px solid #FF6B35;border-radius:10px;padding:7px 10px;color:#EAF0FF;font-family:inherit;font-size:13.5px;outline:none;text-align:center">
+          </sc-if>
+          <sc-if value="{{notEditPrize}}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{startEditPrize}}" title="Klik for at ændre præmien" style="margin-top:6px;background:none;border:1px dashed rgba(255,255,255,.28);border-radius:10px;padding:6px 12px;color:#FFC94D;font-family:Fredoka,sans-serif;font-weight:500;font-size:14px;cursor:pointer;max-width:130px" style-hover="border-color:#FFC94D">{{prizeDisplay}}</button>
+          </sc-if>
+        </div>
+        <div style="position:absolute;top:68px;left:{{rocketLeft}};transition:left 1.2s cubic-bezier(.22,1,.36,1);z-index:5;margin-left:-14px">
+          <sc-if value="{{hasFlyer}}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;left:60px;top:-16px;font-family:Fredoka,sans-serif;font-weight:600;color:#FFC94D;font-size:19px;animation:floatUp 1.7s ease forwards;white-space:nowrap;text-shadow:0 2px 12px rgba(0,0,0,.6)">{{flyerText}}</div>
+          </sc-if>
+          <div style="animation:bob 3.4s ease-in-out infinite">
+            <svg width="110" height="76" viewBox="0 0 110 76" style="overflow:visible;filter:drop-shadow(0 8px 18px rgba(255,107,53,.35))">
+              <defs>
+                <linearGradient id="hullGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#FFFFFF"></stop>
+                  <stop offset="0.55" stop-color="#EAF0FF"></stop>
+                  <stop offset="1" stop-color="#C2CDEE"></stop>
+                </linearGradient>
+                <linearGradient id="noseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#FF8E53"></stop>
+                  <stop offset="1" stop-color="#E8531C"></stop>
+                </linearGradient>
+              </defs>
+              <g style="transform-origin:16px 38px;animation:flameFlick .26s ease-in-out infinite">
+                <ellipse cx="10" cy="38" rx="10" ry="8" fill="#FFC94D" opacity="0.35"></ellipse>
+                <path d="M17 30 C6 25 -7 29 -16 38 C-7 47 6 51 17 46 C14 44 13 41 13 38 C13 35 14 32 17 30 Z" fill="#FFC94D"></path>
+                <path d="M16 33 C9 31 1 33 -5 38 C1 43 9 45 16 43 C14.5 41.5 14 40 14 38 C14 36 14.5 34.5 16 33 Z" fill="#FF6B35"></path>
+              </g>
+              <path d="M36 21 C31 11 23 5 12 4 C17 12 19 18 19 25 L36 27 Z" fill="url(#noseGrad)"></path>
+              <path d="M36 55 C31 65 23 71 12 72 C17 64 19 58 19 51 L36 49 Z" fill="url(#noseGrad)"></path>
+              <path d="M25 29 L17 31 L17 45 L25 47 Z" fill="#8E9BC4"></path>
+              <path d="M31 17 C27 17 24 22 24 29 L24 47 C24 54 27 59 31 59 L46 59 C66 59 85 50 97 38 C85 26 66 17 46 17 Z" fill="url(#hullGrad)"></path>
+              <path d="M64 19.5 C78 23 90 30 96.9 38 C90 46 78 53 64 56.5 C69.5 50.5 72 44.5 72 38 C72 31.5 69.5 25.5 64 19.5 Z" fill="url(#noseGrad)"></path>
+              <path d="M28 47 C28 53 30.5 57.5 34 58.7 L46 59 C60 59 75 53.5 87 45 C72 53 52 55.5 36 53 C31.5 52.2 28.5 50 28 47 Z" fill="#0B1026" opacity="0.14"></path>
+              <circle cx="47" cy="38" r="10" fill="#8E9BC4"></circle>
+              <circle cx="47" cy="38" r="7.5" fill="#5FA8E8"></circle>
+              <circle cx="44.5" cy="35.5" r="2.6" fill="#D8ECFF"></circle>
+              <rect x="30" y="20.5" width="4.5" height="35" rx="2.2" fill="#FF6B35" opacity="0.85"></rect>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:14.5px;color:#93A0C9;margin-top:2px">{{remainingText}}</div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:44px">
+        <sc-for list="{{persons}}" as="p" hint-placeholder-count="4">
+          <div style="background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:18px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="{{p.avS}}">{{p.initial}}</div>
+              <div>
+                <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:18px">{{p.name}}</div>
+                <div style="font-size:13px;color:#93A0C9">{{p.bookText}}</div>
+              </div>
+            </div>
+            <div style="margin-top:14px;font-family:Fredoka,sans-serif;font-weight:600;font-size:25px">{{p.pagesFmt}} <span style="font-size:13px;color:#93A0C9;font-family:'Atkinson Hyperlegible',sans-serif;font-weight:400">/ {{personGoalFmt}} sider</span></div>
+            <div style="height:8px;border-radius:999px;background:rgba(255,255,255,.08);margin-top:10px;overflow:hidden">
+              <div style="{{p.barS}}"></div>
+            </div>
+            <sc-if value="{{showBadges}}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;gap:6px;margin-top:14px">
+                <sc-for list="{{p.badges}}" as="b" hint-placeholder-count="6">
+                  <span title="{{b.label}}" style="{{b.s}}">{{b.icon}}</span>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(0,5fr) minmax(0,4fr);gap:24px;align-items:start;margin-top:44px">
+        <div style="background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:24px">
+          <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:21px">Ny bog læst?</div>
+          <div style="font-size:14px;color:#93A0C9;margin-top:3px">Siderne skubber raketten mod præmien.</div>
+          <div style="font-size:12px;color:#93A0C9;letter-spacing:.09em;font-weight:700;margin-top:18px;text-transform:uppercase">Hvem har læst den?</div>
+          <div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap">
+            <sc-for list="{{readers}}" as="r" hint-placeholder-count="4">
+              <button onClick="{{r.pick}}" style="{{r.s}}"><span style="{{r.dotS}}"></span>{{r.name}}</button>
+            </sc-for>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+            <div style="grid-column:1/-1">
+              <div style="font-size:13px;color:#93A0C9;margin-bottom:5px">Titel</div>
+              <input value="{{ft}}" onChange="{{onFt}}" onKeyDown="{{formKey}}" placeholder="Fx Mumitroldene og den store oversvømmelse" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;color:#EAF0FF;font-family:inherit;font-size:15px;outline:none" style-focus="border-color:#FF6B35;box-shadow:0 0 0 3px rgba(255,107,53,.18)">
+            </div>
+            <div>
+              <div style="font-size:13px;color:#93A0C9;margin-bottom:5px">Forfatter <span style="opacity:.6">(valgfri)</span></div>
+              <input value="{{fa}}" onChange="{{onFa}}" placeholder="Tove Jansson" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;color:#EAF0FF;font-family:inherit;font-size:15px;outline:none" style-focus="border-color:#FF6B35;box-shadow:0 0 0 3px rgba(255,107,53,.18)">
+            </div>
+            <div style="display:grid;grid-template-columns:minmax(110px,1fr) minmax(150px,1.2fr);gap:12px">
+              <div>
+                <div style="font-size:13px;color:#93A0C9;margin-bottom:5px">Sidetal</div>
+                <input value="{{fp}}" onChange="{{onFp}}" onKeyDown="{{formKey}}" type="number" min="1" placeholder="180" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;color:#EAF0FF;font-family:inherit;font-size:15px;outline:none" style-focus="border-color:#FF6B35;box-shadow:0 0 0 3px rgba(255,107,53,.18)">
+              </div>
+              <div>
+                <div style="font-size:13px;color:#93A0C9;margin-bottom:5px">Færdig den</div>
+                <input value="{{fd}}" onChange="{{onFd}}" type="date" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px 12px;color:#EAF0FF;font-family:inherit;font-size:14px;outline:none" style-focus="border-color:#FF6B35;box-shadow:0 0 0 3px rgba(255,107,53,.18)">
+              </div>
+            </div>
+            <div style="grid-column:1/-1">
+              <div style="font-size:13px;color:#93A0C9;margin-bottom:5px">Hvad synes du?</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{emojis}}" as="e" hint-placeholder-count="6">
+                  <button onClick="{{e.pick}}" style="{{e.s}}">{{e.ch}}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="grid-column:1/-1">
+              <div style="font-size:13px;color:#93A0C9;margin-bottom:5px">Kommentar <span style="opacity:.6">(valgfri)</span></div>
+              <input value="{{fc}}" onChange="{{onFc}}" onKeyDown="{{formKey}}" placeholder="Den bedste bog i år!" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:12px 14px;color:#EAF0FF;font-family:inherit;font-size:15px;outline:none" style-focus="border-color:#FF6B35;box-shadow:0 0 0 3px rgba(255,107,53,.18)">
+            </div>
+          </div>
+          <button onClick="{{addBook}}" disabled="{{submitDisabled}}" style="{{btnS}}" style-hover="transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,107,53,.45)">Send siderne afsted</button>
+        </div>
+
+        <div style="background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:24px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+            <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:21px">Logbog</div>
+            <div style="font-size:13px;color:#93A0C9">{{bookCountText}}</div>
+          </div>
+          <sc-if value="{{noBooks}}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px;font-size:14.5px;color:#93A0C9;line-height:1.5">Her lander bøgerne, når I taster dem ind. Den første venter på jer.</div>
+          </sc-if>
+          <div style="margin-top:10px;max-height:560px;overflow-y:auto">
+            <sc-for list="{{books}}" as="b" hint-placeholder-count="0">
+              <div style="display:flex;gap:12px;padding:12px 10px;border-radius:14px;align-items:flex-start" style-hover="background:rgba(255,255,255,.05)">
+                <div style="font-size:24px;line-height:1.2">{{b.e}}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:700;font-size:15.5px">{{b.t}} <span style="color:#93A0C9;font-weight:400">{{b.byline}}</span></div>
+                  <div style="display:flex;gap:10px;font-size:13px;color:#93A0C9;margin-top:4px;align-items:center">
+                    <span style="{{b.chipS}}">{{b.rn}}</span>
+                    <span>{{b.dateFmt}}</span>
+                  </div>
+                  <sc-if value="{{b.hasC}}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:13.5px;color:#B9C3E6;font-style:italic;margin-top:5px">"{{b.c}}"</div>
+                  </sc-if>
+                </div>
+                <div style="text-align:right;flex-shrink:0">
+                  <div style="font-family:Fredoka,sans-serif;font-weight:600;color:#FFC94D;font-size:15px">{{b.pFmt}}</div>
+                  <button onClick="{{b.del}}" title="Slet" style="background:none;border:none;color:#5B6693;cursor:pointer;font-size:13px;padding:2px" style-hover="color:#FF8A5C">✕</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{isStats}}" hint-placeholder-val="{{ false }}">
+    <div style="margin-top:36px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start">
+        <div style="background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:24px">
+          <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:20px;margin-bottom:18px">Sider pr. person</div>
+          <sc-for list="{{statBars}}" as="sb" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+              <div style="width:64px;font-weight:700;font-size:14.5px">{{sb.n}}</div>
+              <div style="flex:1;height:14px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden">
+                <div style="{{sb.fillS}}"></div>
+              </div>
+              <div style="width:72px;text-align:right;font-family:Fredoka,sans-serif;font-weight:600;font-size:15px">{{sb.v}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:24px">
+          <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:20px;margin-bottom:10px">Nøgletal</div>
+          <sc-for list="{{facts}}" as="f" hint-placeholder-count="5">
+            <div style="display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+              <div style="color:#93A0C9;font-size:14.5px">{{f.k}}</div>
+              <div style="font-weight:700;font-size:14.5px;text-align:right">{{f.v}}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="grid-column:1/-1;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:24px">
+          <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:20px;margin-bottom:20px">Sider pr. måned</div>
+          <div style="display:flex;align-items:flex-end;gap:10px;height:180px">
+            <sc-for list="{{months}}" as="mo" hint-placeholder-count="12">
+              <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%">
+                <div style="font-size:11.5px;color:#FFC94D;font-weight:700;margin-bottom:5px;height:14px">{{mo.v}}</div>
+                <div style="{{mo.barS}}"></div>
+                <div style="font-size:12px;color:#93A0C9;margin-top:8px">{{mo.l}}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="text-align:center;font-size:12.5px;color:#5B6693;margin-top:52px">Data gemmes lokalt i denne browser · Fælles mål: {{goalFmt}} sider · Personligt mål: {{personGoalFmt}} sider</div>
+  </div>
+
+  <sc-if value="{{goalOverlay}}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:80;background:rgba(4,6,18,.82);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center" onClick="{{closeOverlay}}">
+      <div style="background:linear-gradient(180deg,#141B3C,#0B1026);border:1px solid rgba(255,255,255,.15);border-radius:28px;padding:52px 64px;text-align:center;animation:popIn .5s cubic-bezier(.22,1,.36,1);max-width:520px">
+        <div style="font-size:60px">🎉</div>
+        <div style="font-family:Fredoka,sans-serif;font-weight:700;font-size:42px;margin-top:10px;letter-spacing:.5px">MÅLET ER NÅET!</div>
+        <div style="color:#93A0C9;font-size:16px;margin-top:8px">{{goalFmt}} sider læst som familie. Vildt godt gået, Marie, Jacob, Alfred og Hugo.</div>
+        <div style="margin-top:24px;font-size:12px;color:#93A0C9;letter-spacing:.1em;text-transform:uppercase;font-weight:700">Præmien er jeres</div>
+        <div style="font-family:Fredoka,sans-serif;font-weight:600;font-size:27px;color:#FFC94D;margin-top:6px">{{prizeDisplay}}</div>
+        <button onClick="{{closeOverlay}}" style="margin-top:28px;background:linear-gradient(135deg,#FF6B35,#FF8E53);border:none;border-radius:14px;padding:14px 34px;font-family:Fredoka,sans-serif;font-weight:600;font-size:17px;color:#1B0E06;cursor:pointer">Fejr videre</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;familyGoal&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 20000, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 1000, &quot;step&quot;: 500, &quot;section&quot;: &quot;Mål&quot;}, &quot;personGoal&quot;: {&quot;editor&quot;: &quot;int&quot;, &quot;default&quot;: 5000, &quot;tsType&quot;: &quot;number&quot;, &quot;min&quot;: 500, &quot;step&quot;: 250, &quot;section&quot;: &quot;Mål&quot;}, &quot;showBadges&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Visning&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.KEY = 'familielaeseraket-2026';
+    this.START = new Date(2026, 7, 1);
+    this.END = new Date(2027, 7, 1);
+    this.READERS = [
+      { k: 'marie', n: 'Marie', c: '#FF7AC3' },
+      { k: 'jacob', n: 'Jacob', c: '#6FB4FF' },
+      { k: 'alfred', n: 'Alfred', c: '#FFC94D' },
+      { k: 'hugo', n: 'Hugo', c: '#5CE08A' }
+    ];
+    this.EMOJIS = ['🤩', '😍', '😂', '😭', '😱', '🥱'];
+    this.MLABELS = ['Aug', 'Sep', 'Okt', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul'];
+    this.stars = Array.from({ length: 110 }, () => ({
+      l: (Math.random() * 100).toFixed(2) + '%', t: (Math.random() * 100).toFixed(2) + '%',
+      w: (Math.random() * 2.2 + 1).toFixed(1) + 'px',
+      du: (Math.random() * 3 + 2).toFixed(1) + 's', dl: (-Math.random() * 5).toFixed(1) + 's'
+    }));
+    this.state = {
+      data: { books: [], prize: '', celebrated: [], muted: false },
+      view: 'home', displayTotal: 0,
+      ft: '', fa: '', fp: '', fc: '', fr: null, fe: '🤩', fd: this.todayISO(),
+      editPrize: false, prizeDraft: '', flyer: null, goalOverlay: false
+    };
+    this.parts = [];
+  }
+  goal() { return this.props.familyGoal ?? 20000; }
+  pgoal() { return this.props.personGoal ?? 5000; }
+  todayISO() { const d = new Date(), p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+  fmt(n) { return Math.round(n).toLocaleString('da-DK'); }
+  dateFmt(s) { try { return new Date(s + 'T00:00').toLocaleDateString('da-DK', { day: 'numeric', month: 'short' }); } catch (e) { return s; } }
+  total(d) { return (d || this.state.data).books.reduce((s, b) => s + b.p, 0); }
+  componentDidMount() {
+    let data = this.state.data;
+    try {
+      const raw = localStorage.getItem(this.KEY);
+      if (raw) { const j = JSON.parse(raw); data = { books: j.books || [], prize: j.prize || '', celebrated: j.celebrated || [], muted: !!j.muted }; }
+    } catch (e) {}
+    this.setState({ data }, () => this.animateTotal(0, this.total()));
+    this.sizeCanvas = () => { const c = this.canvas; if (!c) return; c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio; };
+    this.sizeCanvas();
+    addEventListener('resize', this.sizeCanvas);
+  }
+  componentWillUnmount() { removeEventListener('resize', this.sizeCanvas); cancelAnimationFrame(this.raf); cancelAnimationFrame(this.craf); clearTimeout(this._flyT); }
+  persist(data) { try { localStorage.setItem(this.KEY, JSON.stringify(data)); } catch (e) {} }
+  animateTotal(from, to) {
+    cancelAnimationFrame(this.raf);
+    const t0 = performance.now(), dur = 1300;
+    const step = t => {
+      const k = Math.min((t - t0) / dur, 1), e = 1 - Math.pow(1 - k, 3);
+      this.setState({ displayTotal: Math.round(from + (to - from) * e) });
+      if (k < 1) this.raf = requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  }
+  ac() { if (!this._ac) this._ac = new (window.AudioContext || window.webkitAudioContext)(); if (this._ac.state === 'suspended') this._ac.resume(); return this._ac; }
+  tone(f0, f1, t, dur, type, vol) {
+    const a = this.ac(), o = a.createOscillator(), g = a.createGain();
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(f0, a.currentTime + t);
+    o.frequency.exponentialRampToValueAtTime(Math.max(f1, 1), a.currentTime + t + dur);
+    g.gain.setValueAtTime(0.0001, a.currentTime + t);
+    g.gain.exponentialRampToValueAtTime(vol || 0.18, a.currentTime + t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + t + dur);
+    o.connect(g).connect(a.destination);
+    o.start(a.currentTime + t); o.stop(a.currentTime + t + dur + 0.05);
+  }
+  sWhoosh() { if (this.state.data.muted) return; try { this.tone(160, 900, 0, 0.5, 'sine', 0.15); this.tone(90, 500, 0.04, 0.5, 'triangle', 0.08); } catch (e) {} }
+  sFanfare(big) { if (this.state.data.muted) return; try { const ns = big ? [523, 659, 784, 1047, 1319] : [523, 659, 784, 1047]; ns.forEach((f, i) => this.tone(f, f, i * 0.12, 0.35, 'triangle', 0.16)); } catch (e) {} }
+  burst(xr, yr, n) {
+    const c = this.canvas; if (!c) return;
+    const cols = ['#FF6B35', '#FFC94D', '#FF7AC3', '#6FB4FF', '#5CE08A', '#FFFFFF'];
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2, v = (Math.random() * 7 + 3) * devicePixelRatio;
+      this.parts.push({ x: xr * c.width, y: yr * c.height, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 6 * devicePixelRatio, g: 0.22 * devicePixelRatio, s: (Math.random() * 7 + 4) * devicePixelRatio, r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.3, col: cols[i % cols.length], life: 1, dec: 0.008 + Math.random() * 0.008 });
+    }
+    this.loopConf();
+  }
+  loopConf() {
+    if (this._confOn) return;
+    this._confOn = true;
+    const c = this.canvas, ctx = c.getContext('2d');
+    const step = () => {
+      ctx.clearRect(0, 0, c.width, c.height);
+      this.parts = this.parts.filter(p => p.life > 0);
+      if (!this.parts.length) { this._confOn = false; return; }
+      for (const p of this.parts) {
+        p.x += p.vx; p.y += p.vy; p.vy += p.g; p.vx *= 0.99; p.r += p.vr; p.life -= p.dec;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.max(p.life, 0);
+        ctx.fillStyle = p.col; ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6); ctx.restore();
+      }
+      this.craf = requestAnimationFrame(step);
+    };
+    this.craf = requestAnimationFrame(step);
+  }
+  addBook() {
+    const { ft, fa, fp, fr, fe, fc, fd } = this.state;
+    const pages = parseInt(fp, 10);
+    if (!ft.trim() || !fr || !pages || pages < 1) return;
+    const before = this.total(), goal = this.goal();
+    const book = { id: Date.now(), t: ft.trim(), a: fa.trim(), p: pages, r: fr, e: fe, c: fc.trim(), d: fd || this.todayISO() };
+    const data = { ...this.state.data, books: [...this.state.data.books, book] };
+    const after = before + pages;
+    const cel = [...(data.celebrated || [])];
+    let hit = null;
+    for (const m of [25, 50, 75, 100]) { if (before / goal * 100 < m && after / goal * 100 >= m && !cel.includes(m)) { cel.push(m); hit = m; } }
+    data.celebrated = cel;
+    this.persist(data);
+    this.setState({ data, ft: '', fa: '', fp: '', fc: '', fe: '🤩', fd: this.todayISO(), flyer: { k: Date.now(), txt: '+' + this.fmt(pages) + ' sider' } });
+    this.animateTotal(before, after);
+    this.sWhoosh();
+    clearTimeout(this._flyT);
+    this._flyT = setTimeout(() => this.setState({ flyer: null }), 1800);
+    const pct = Math.min(after / goal, 1);
+    setTimeout(() => {
+      this.burst(0.08 + 0.84 * pct, 0.3, hit ? 220 : 60);
+      if (hit) { this.sFanfare(hit === 100); if (hit === 100) { this.setState({ goalOverlay: true }); this.burst(0.5, 0.4, 320); } }
+    }, 900);
+  }
+  delBook(id) {
+    const b = this.state.data.books.find(x => x.id === id);
+    if (!window.confirm('Slet "' + (b ? b.t : '') + '"?')) return;
+    const before = this.total();
+    const data = { ...this.state.data, books: this.state.data.books.filter(x => x.id !== id) };
+    this.persist(data);
+    this.setState({ data });
+    this.animateTotal(before, this.total(data));
+  }
+  renderVals() {
+    const S = this.state, d = S.data, goal = this.goal(), pgoal = this.pgoal();
+    const total = this.total(), pct = Math.min(total / goal, 1);
+    const now = new Date();
+    const day = Math.max(1, Math.min(365, Math.floor((now - this.START) / 86400000) + 1));
+    const expected = goal * Math.min(Math.max((now - this.START) / (this.END - this.START), 0), 1);
+    const diff = Math.round(total - expected);
+    const daysLeft = Math.max(1, Math.round((this.END - now) / 86400000));
+    const perDay = Math.max(0, Math.ceil((goal - total) / daysLeft));
+    const chip = (bg, col, bord) => ({ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '7px 14px', borderRadius: '999px', fontSize: '13.5px', fontWeight: 700, background: bg, color: col, border: '1px solid ' + bord });
+    const track = p => 'calc(70px + (100% - 156px) * ' + p + ')';
+    const tab = on => ({ padding: '9px 18px', borderRadius: '999px', fontFamily: 'Fredoka,sans-serif', fontWeight: 500, fontSize: '15px', cursor: 'pointer', border: '1px solid ' + (on ? 'rgba(255,255,255,.18)' : 'transparent'), background: on ? 'rgba(255,255,255,.1)' : 'transparent', color: on ? '#EAF0FF' : '#93A0C9' });
+    const perReader = this.READERS.map(r => {
+      const bs = d.books.filter(b => b.r === r.k);
+      return { r, bs, pages: bs.reduce((s, b) => s + b.p, 0) };
+    });
+    const persons = perReader.map(({ r, bs, pages }) => {
+      const ppct = Math.min(pages / pgoal, 1);
+      const defs = [
+        ['🚀', 'Første bog', bs.length >= 1],
+        ['📚', '5 bøger', bs.length >= 5],
+        ['🌙', '1.000 sider', pages >= 1000],
+        ['⭐', '2.500 sider', pages >= 2500],
+        ['🐘', 'En bog på 300+ sider', bs.some(b => b.p >= 300)],
+        ['🏆', 'Personligt mål nået: ' + this.fmt(pgoal) + ' sider', pages >= pgoal]
+      ];
+      return {
+        name: r.n, initial: r.n[0], pagesFmt: this.fmt(pages),
+        bookText: bs.length + (bs.length === 1 ? ' bog' : ' bøger'),
+        avS: { width: '44px', height: '44px', borderRadius: '50%', background: r.c, color: '#0B1026', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Fredoka,sans-serif', fontWeight: 600, fontSize: '20px', flexShrink: 0 },
+        barS: { height: '100%', width: (ppct * 100).toFixed(1) + '%', borderRadius: '999px', background: r.c, transition: 'width 1.2s cubic-bezier(.22,1,.36,1)', boxShadow: '0 0 10px ' + r.c + '66' },
+        badges: defs.map(([icon, label, on]) => ({ icon, label, s: { width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '9px', fontSize: '15px', background: on ? 'rgba(255,255,255,.1)' : 'rgba(255,255,255,.03)', border: '1px solid ' + (on ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.06)'), opacity: on ? 1 : 0.28, filter: on ? 'none' : 'grayscale(1)', cursor: 'default' } }))
+      };
+    });
+    const readers = this.READERS.map(r => ({
+      name: r.n, pick: () => this.setState({ fr: r.k }),
+      s: { display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '999px', cursor: 'pointer', fontFamily: 'Fredoka,sans-serif', fontWeight: 500, fontSize: '15px', transition: 'all .18s', background: S.fr === r.k ? r.c : 'rgba(255,255,255,.05)', color: S.fr === r.k ? '#0B1026' : '#EAF0FF', border: '1px solid ' + (S.fr === r.k ? r.c : 'rgba(255,255,255,.14)') },
+      dotS: { width: '9px', height: '9px', borderRadius: '50%', background: S.fr === r.k ? '#0B1026' : r.c }
+    }));
+    const emojis = this.EMOJIS.map(ch => ({
+      ch, pick: () => this.setState({ fe: ch }),
+      s: { fontSize: '22px', padding: '8px 11px', borderRadius: '12px', cursor: 'pointer', border: '1px solid ' + (S.fe === ch ? '#FF6B35' : 'rgba(255,255,255,.1)'), background: S.fe === ch ? 'rgba(255,107,53,.18)' : 'rgba(255,255,255,.04)', transition: 'all .15s', transform: S.fe === ch ? 'scale(1.12)' : 'scale(1)' }
+    }));
+    const rbyk = {}; this.READERS.forEach(r => { rbyk[r.k] = r; });
+    const books = [...d.books].sort((a, b) => (b.d || '').localeCompare(a.d || '') || b.id - a.id).map(b => {
+      const r = rbyk[b.r] || { n: '?', c: '#FFFFFF' };
+      return { t: b.t, e: b.e, c: b.c, rn: r.n, byline: b.a ? '· ' + b.a : '', pFmt: '+' + this.fmt(b.p), dateFmt: this.dateFmt(b.d), hasC: !!b.c, del: () => this.delBook(b.id), chipS: { display: 'inline-flex', alignItems: 'center', padding: '2px 10px', borderRadius: '999px', background: r.c + '22', color: r.c, fontWeight: 700, fontSize: '12px' } };
+    });
+    const milestones = [25, 50, 75].map(m => ({
+      left: track(m / 100), label: this.fmt(goal * m / 100), pctLabel: m + ' %',
+      dotS: { width: '16px', height: '16px', borderRadius: '50%', margin: '0 auto', background: pct * 100 >= m ? '#FFC94D' : '#141B3C', border: '2px solid ' + (pct * 100 >= m ? '#FFC94D' : 'rgba(255,255,255,.25)'), boxShadow: pct * 100 >= m ? '0 0 12px rgba(255,201,77,.7)' : 'none', transition: 'all .6s' }
+    }));
+    const maxP = Math.max(1, ...perReader.map(x => x.pages));
+    const statBars = perReader.map(({ r, pages }) => ({ n: r.n, v: this.fmt(pages), fillS: { height: '100%', width: (pages / maxP * 100).toFixed(1) + '%', borderRadius: '999px', background: r.c, boxShadow: '0 0 10px ' + r.c + '55', transition: 'width .8s' } }));
+    const nb = d.books.length;
+    const big = d.books.reduce((m, b) => (!m || b.p > m.p) ? b : m, null);
+    const topR = [...perReader].sort((a, b) => b.pages - a.pages)[0];
+    const facts = [
+      { k: 'Bøger i alt', v: String(nb) },
+      { k: 'Sider i alt', v: this.fmt(total) },
+      { k: 'Snit pr. bog', v: nb ? this.fmt(total / nb) + ' sider' : '—' },
+      { k: 'Tykkeste bog', v: big ? big.t + ' · ' + this.fmt(big.p) + ' sider' : '—' },
+      { k: 'Flittigste læser', v: topR && topR.pages > 0 ? topR.r.n + ' · ' + this.fmt(topR.pages) + ' sider' : '—' }
+    ];
+    const monthly = [];
+    for (let i = 0; i < 12; i++) {
+      const y = i < 5 ? 2026 : 2027, m = (7 + i) % 12;
+      const key = y + '-' + String(m + 1).padStart(2, '0');
+      monthly.push({ l: this.MLABELS[i], pages: d.books.filter(b => (b.d || '').startsWith(key)).reduce((s, b) => s + b.p, 0) });
+    }
+    const maxM = Math.max(1, ...monthly.map(m => m.pages));
+    const months = monthly.map(m => ({
+      l: m.l, v: m.pages ? this.fmt(m.pages) : '',
+      barS: { width: '100%', maxWidth: '46px', height: (m.pages ? Math.max(8, m.pages / maxM * 130) : 3) + 'px', background: m.pages ? 'linear-gradient(180deg,#FF8E53,#FF6B35)' : 'rgba(255,255,255,.08)', borderRadius: '6px 6px 3px 3px', boxShadow: m.pages ? '0 0 10px rgba(255,107,53,.3)' : 'none', transition: 'height .8s' }
+    }));
+    const canSubmit = !!(S.ft.trim() && S.fr && parseInt(S.fp, 10) > 0);
+    const pctShow = pct * 100;
+    return {
+      stars: this.stars,
+      canvasRef: el => { this.canvas = el; if (el && this.sizeCanvas) this.sizeCanvas(); },
+      isHome: S.view === 'home', isStats: S.view === 'stats',
+      goHome: () => this.setState({ view: 'home' }), goStats: () => this.setState({ view: 'stats' }),
+      tabHomeS: tab(S.view === 'home'), tabStatsS: tab(S.view === 'stats'),
+      muteIcon: d.muted ? '🔇' : '🔊',
+      toggleMute: () => { const nd = { ...d, muted: !d.muted }; this.persist(nd); this.setState({ data: nd }); },
+      totalDisplay: this.fmt(S.displayTotal),
+      goalFmt: this.fmt(goal), personGoalFmt: this.fmt(pgoal),
+      pctLabel: pctShow.toLocaleString('da-DK', { maximumFractionDigits: 1 }) + ' %',
+      paceChipS: diff >= 0 ? chip('rgba(92,224,138,.13)', '#7DE8A4', 'rgba(92,224,138,.35)') : chip('rgba(255,201,77,.12)', '#FFD97A', 'rgba(255,201,77,.35)'),
+      dimChipS: chip('rgba(255,255,255,.06)', '#93A0C9', 'rgba(255,255,255,.12)'),
+      paceText: diff >= 0 ? this.fmt(diff) + ' sider foran planen' : this.fmt(-diff) + ' sider efter planen',
+      dayText: 'Dag ' + day + ' af 365', dailyNeedText: '≈ ' + perDay + ' sider om dagen herfra',
+      remainingText: goal - total > 0 ? this.fmt(goal - total) + ' sider tilbage til præmien' : 'Målet er nået — præmien er jeres!',
+      fillW: 'calc((100% - 156px) * ' + pct + ')', rocketLeft: track(pct),
+      milestones, persons, readers, emojis, books,
+      noBooks: nb === 0, bookCountText: nb + (nb === 1 ? ' bog · ' : ' bøger · ') + this.fmt(total) + ' sider',
+      showBadges: this.props.showBadges ?? true,
+      ft: S.ft, fa: S.fa, fp: S.fp, fc: S.fc, fd: S.fd,
+      onFt: e => this.setState({ ft: e.target.value }), onFa: e => this.setState({ fa: e.target.value }),
+      onFp: e => this.setState({ fp: e.target.value }), onFc: e => this.setState({ fc: e.target.value }),
+      onFd: e => this.setState({ fd: e.target.value }),
+      formKey: e => { if (e.key === 'Enter') this.addBook(); },
+      addBook: () => this.addBook(),
+      submitDisabled: !canSubmit,
+      btnS: { marginTop: '18px', width: '100%', background: 'linear-gradient(135deg,#FF6B35,#FF8E53)', border: 'none', borderRadius: '14px', padding: '16px', fontFamily: 'Fredoka,sans-serif', fontWeight: 600, fontSize: '18px', color: '#1B0E06', cursor: canSubmit ? 'pointer' : 'default', opacity: canSubmit ? 1 : 0.35, transition: 'all .2s', boxShadow: canSubmit ? '0 6px 22px rgba(255,107,53,.35)' : 'none' },
+      editPrize: S.editPrize, notEditPrize: !S.editPrize,
+      prizeDisplay: d.prize || 'Vælg præmien', prizeDraft: S.prizeDraft,
+      startEditPrize: () => this.setState({ editPrize: true, prizeDraft: d.prize }),
+      onPrizeDraft: e => this.setState({ prizeDraft: e.target.value }),
+      savePrize: () => { const nd = { ...this.state.data, prize: this.state.prizeDraft.trim() }; this.persist(nd); this.setState({ data: nd, editPrize: false }); },
+      prizeKey: e => { if (e.key === 'Enter') e.target.blur(); },
+      statBars, facts, months,
+      goalOverlay: S.goalOverlay, closeOverlay: () => this.setState({ goalOverlay: false }),
+      flyerText: S.flyer ? S.flyer.txt : '', hasFlyer: !!S.flyer
+    };
+  }
+}
+</script>
+</body>
+</html>
