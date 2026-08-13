@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "netlify dev",
     "build": "node scripts/build.mjs",
-    "check": "node --check app.js && node --check netlify/functions/state.mjs"
+    "check": "node --check app.js && node --check src/state.js && node --check src/sync.js && node --check netlify/functions/state.mjs && node --check netlify/functions/operations.mjs",
+    "test": "node --test"
   },
   "dependencies": { "@netlify/blobs": "^10.0.0" },
   "devDependencies": { "netlify-cli": "^23.0.0" }
