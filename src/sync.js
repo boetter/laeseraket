@@ -1,11 +1,23 @@
 import { OUTBOX_KEY, STORAGE_KEY } from './config.js';
-import { applyOperation, mergeStates, sanitizeState } from './state.js';
+import { LEGACY_STORAGE_KEY, migrateLegacyState } from './legacy.js';
+import { applyOperation, mergeStates, sanitizeState, now, uuid } from './state.js';
 
 const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
-export const loadLocal = () => sanitizeState(read(STORAGE_KEY, {}));
 export const loadOutbox = () => read(OUTBOX_KEY, []);
 export const saveLocal = state => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 export const queue = operation => localStorage.setItem(OUTBOX_KEY, JSON.stringify([...loadOutbox(), operation]));
+
+export function loadLocal() {
+  const stored = read(STORAGE_KEY, null);
+  if (stored) return sanitizeState(stored);
+  const migrated = sanitizeState(migrateLegacyState(read(LEGACY_STORAGE_KEY, null)));
+  if (!migrated.books.length && !migrated.prize) return migrated;
+  // Bøger fra v1 lægges i udbakken, så en enhed der aldrig nåede at
+  // synkronisere også får sine bøger op i familiens fælles log.
+  saveLocal(migrated);
+  for (const book of migrated.books) queue({ operationId: uuid(), type: 'upsert', createdAt: now(), book });
+  return migrated;
+}
 
 export async function synchronize(state, onStatus = () => {}) {
   let current = state;

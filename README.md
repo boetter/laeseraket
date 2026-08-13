@@ -4,6 +4,8 @@
 
 Appen er nu implementeret som en statisk, responsiv webapp med en lille Netlify Function. Den bruger **Netlify Blobs** som familiens fælles lager og browserens `localStorage` som offline-kopi. Det betyder, at der ikke kræves Neon, en separat database eller brugerlogin. Hvis Blob-kaldet midlertidigt fejler, kan appen stadig bruges på den aktuelle enhed, og den forsøger igen ved næste ændring eller genindlæsning.
 
+Bøger fra den første udgave (localStorage-nøglen `familielaeseraket-2026` og blob-store'en `familie-laeseraket`) migreres automatisk af `src/legacy.js` — både i browseren og i `/api/state`. Hvert gammelt numerisk id oversættes til det samme UUID hver gang, så den samme bog ikke bliver til en dublet, når flere enheder migrerer hver for sig. Migreringen er skrivebeskyttet: de gamle data røres ikke, og rettelser eller sletninger i v2 vinder altid over den migrerede udgave.
+
 > Appen har med vilje ingen loginbeskyttelse. Enhver med sidens adresse kan derfor se og ændre logbogen. Brug en svært gættelig Netlify-adresse, og del den kun med familien.
 
 ### Lokal udvikling
