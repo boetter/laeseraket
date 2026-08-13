@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { legacyUuid, migrateLegacyBook, migrateLegacyState } from '../src/legacy.js';
+import { LEGACY_PRIZE_TIME, legacyUuid, migrateLegacyBook, migrateLegacyState } from '../src/legacy.js';
 import { mergeStates, validBook } from '../src/state.js';
 import { mergeOperations, validateOperation } from '../netlify/functions/validation.mjs';
 
@@ -25,7 +25,14 @@ test('ugyldige v1-poster springes over i stedet for at vælte migreringen', () =
   const state = migrateLegacyState({ books: [legacy, { ...legacy, id: 2, r: 'ukendt' }, { ...legacy, id: 3, t: '' }, null, { ...legacy, id: 4, p: 0 }], prize: 'Tur i biffen' });
   assert.equal(state.books.length, 1);
   assert.equal(state.prize, 'Tur i biffen');
-  assert.equal(state.prizeUpdatedAt, '');
+  assert.equal(state.prizeUpdatedAt, LEGACY_PRIZE_TIME);
+});
+
+test('den gamle præmie overtages af enhederne, men taber til en ny præmie', () => {
+  const base = migrateLegacyState({ books: [], prize: 'Tur i biffen' });
+  assert.equal(mergeStates({ books: [] }, base).prize, 'Tur i biffen');
+  const renamed = mergeOperations([{ operationId: legacyUuid('op'), type: 'settings', createdAt: '2026-08-12T10:00:00.000Z', updatedAt: '2026-08-12T10:00:00.000Z', prize: 'Legoland' }], base);
+  assert.equal(renamed.prize, 'Legoland');
 });
 
 test('nye operationer vinder over den migrerede udgave af samme bog', () => {

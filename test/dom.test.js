@@ -12,6 +12,16 @@ test('el() binder hændelser med små bogstaver', async () => {
   assert.match(match[1], /toLowerCase\(\)/);
 });
 
+// Regression: netlify.toml sætter `style-src 'self'` uden 'unsafe-inline', så en
+// style-attribut bliver afvist af browseren. Raketten, farverne og stjernerne
+// placeres derfor gennem CSSOM.
+test('el() sætter style gennem CSSOM, ikke som attribut', async () => {
+  const source = await readFile(new URL('../app.js', import.meta.url), 'utf8');
+  assert.match(source, /key === 'style' \? node\.style\.cssText = value/);
+  const inline = source.match(/setAttribute\('style'/g);
+  assert.equal(inline, null, 'ingen style-attributter må sættes direkte');
+});
+
 test('el() giver en klikbar knap', () => {
   const listeners = new Map();
   const node = { className: '', append() {}, setAttribute() {}, addEventListener: (type, fn) => listeners.set(type, fn) };
