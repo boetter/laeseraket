@@ -127,3 +127,13 @@ Ephemeral UI state: view (home/stats), form fields, animated display total, priz
 
 ## Files
 - `Familiens Læseraket.dc.html` — the complete prototype (markup, styles, logic, SVG). Single source of truth.
+
+## Arkitektur (version 2)
+
+Appen er en installérbar PWA. Appskallen caches af `sw.js`, mens bogdata gemmes lokalt og synkroniseres som idempotente operationer. Hver bog har UUID, `createdAt`, `updatedAt` og et valgfrit `deletedAt`. Sletning er derfor en gendannelig tombstone, ikke fysisk datatab.
+
+En lokal outbox uploades **før** serverens kopi hentes. Serveren gemmer hver operation under sin egen UUID-nøgle og laver et dateret snapshot; samtidige oprettelser overskriver dermed ikke hinanden. Ved sammenfletning vinder den nyeste `updatedAt` for samme bog-ID. Synkroniseringslinjen viser antal ventende ændringer og tidspunktet for seneste synkronisering.
+
+Serveren accepterer kun validerede operationer (UUID'er, kendt læser og emoji, gyldige datoer, begrænsede tekstfelter og rimelige heltal) og afviser requests over 16 KiB. Brugerdata vises med DOM-noder og `textContent`; Netlify tilføjer desuden en restriktiv Content Security Policy.
+
+Logbogen understøtter redigering, detaljer, søgning, filtre, sortering, månedsgruppering, papirkurv/gendannelse samt JSON- og CSV-eksport og valideret JSON-import med forhåndsvisning. Faner, dialoger, statusbeskeder og mobile trykflader er tastatur- og skærmlæservenlige.
