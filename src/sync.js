@@ -10,8 +10,11 @@ export const queue = operation => localStorage.setItem(OUTBOX_KEY, JSON.stringif
 export function loadLocal() {
   const stored = read(STORAGE_KEY, null);
   if (stored) return sanitizeState(stored);
-  const migrated = sanitizeState(migrateLegacyState(read(LEGACY_STORAGE_KEY, null)));
-  if (!migrated.books.length && !migrated.prize) return migrated;
+  const legacy = read(LEGACY_STORAGE_KEY, null);
+  const migrated = legacy ? sanitizeState(migrateLegacyState(legacy)) : sanitizeState({});
+  // Uden v1-data må der ikke sættes et migrerings-tidsstempel på præmien —
+  // så ville enheden se sig selv som lige så opdateret som serveren.
+  if (!migrated.books.length && !migrated.prize) return sanitizeState({});
   // Bøger fra v1 lægges i udbakken, så en enhed der aldrig nåede at
   // synkronisere også får sine bøger op i familiens fælles log.
   saveLocal(migrated);

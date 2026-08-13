@@ -5,6 +5,9 @@ import { EMOJIS, READERS } from './config.js';
 export const LEGACY_STORAGE_KEY = 'familielaeseraket-2026';
 export const LEGACY_STORE = 'familie-laeseraket';
 export const LEGACY_BLOB_KEY = 'state';
+// Den migrerede præmie skal kunne overtages af enhederne, men altid tabe til
+// en præmie der er sat i v2 — derfor et tidsstempel der ligger før alt andet.
+export const LEGACY_PRIZE_TIME = '1970-01-01T00:00:00.000Z';
 
 const MAX_TIME = 8.64e15;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -50,7 +53,7 @@ export function migrateLegacyState(value) {
   return {
     books: (Array.isArray(legacy.books) ? legacy.books : []).map(migrateLegacyBook).filter(Boolean),
     prize: typeof legacy.prize === 'string' ? legacy.prize.slice(0, 200) : '',
-    prizeUpdatedAt: '',
+    prizeUpdatedAt: LEGACY_PRIZE_TIME,
     celebrated: Array.isArray(legacy.celebrated) ? legacy.celebrated.filter(n => [25, 50, 75, 100].includes(n)) : [],
     muted: Boolean(legacy.muted)
   };

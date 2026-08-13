@@ -2,16 +2,21 @@
 <html lang="da"><head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#070B1E"><meta name="description" content="Familiens offline-klare, fælles læselog.">
-  <title>Familiens Læseraket</title><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/styles.css">
+  <title>Familiens Læseraket</title><link rel="icon" href="/icons/icon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/styles.css">
 </head><body>
+<div id="stars" aria-hidden="true"></div><canvas id="confetti" aria-hidden="true"></canvas>
 <main class="shell"><header><div><h1>Familiens Læseraket</h1><p>1. august 2026 → 1. august 2027</p></div>
   <nav role="tablist" aria-label="Hovedmenu"><button class="tab active" role="tab" aria-selected="true" data-view="home">Forside</button><button class="tab" role="tab" aria-selected="false" data-view="stats">Statistik</button><button class="tab" role="tab" aria-selected="false" data-view="admin">Data & backup</button><button id="mute" class="icon" aria-label="Slå lyd fra">🔊</button></nav></header>
   <div id="sync" class="sync" role="status" aria-live="polite">Starter…</div><div id="notice" class="notice" role="status" aria-live="polite"></div>
   <section id="home" role="tabpanel"></section><section id="stats" role="tabpanel" hidden></section><section id="admin" role="tabpanel" hidden></section>
-  <footer>Data gemmes lokalt og i familiens fælles lager · Fælles mål: 20.000 sider</footer>
+  <footer>Data gemmes lokalt og i familiens fælles lager · Fælles mål: 20.000 sider · Personligt mål: 5.000 sider</footer>
 </main>
-<dialog id="book-dialog" aria-labelledby="dialog-title"><form id="book-form" method="dialog"><h2 id="dialog-title">Tilføj bog</h2><input name="id" type="hidden">
+<div id="overlay" class="overlay" role="dialog" aria-labelledby="overlay-title" aria-modal="true" hidden><div class="goal-card"><div class="party" aria-hidden="true">🎉</div><h2 id="overlay-title">MÅLET ER NÅET!</h2><p>20.000 sider læst som familie. Vildt godt gået, Marie, Jacob, Alfred og Hugo.</p><small>PRÆMIEN ER JERES</small><strong id="overlay-prize"></strong><button id="celebrate">Fejr videre</button></div></div>
+<dialog id="book-dialog" aria-labelledby="dialog-title"><form id="book-form" method="dialog"><h2 id="dialog-title">Redigér bog</h2><input name="id" type="hidden">
   <div class="form-grid"><label class="full">Titel <input name="title" maxlength="160" required><span class="field-error"></span></label><label>Forfatter <input name="author" maxlength="120"></label><label>Sidetal <input name="pages" type="number" min="1" max="10000" required></label><label>Dato <input name="date" type="date" required></label><label>Læser <select name="reader" required></select></label><fieldset class="full"><legend>Reaktion</legend><div id="emojis" class="reactions"></div></fieldset><label class="full">Kommentar <textarea name="comment" maxlength="500"></textarea></label></div>
   <div class="dialog-actions"><button type="button" class="secondary" data-close>Fortryd</button><button class="submit" value="save">Gem bog</button></div></form></dialog>
 <dialog id="detail-dialog" aria-labelledby="detail-title"><div id="detail-content"></div><button class="secondary" data-close>Luk</button></dialog>
+<dialog id="prize-dialog" aria-labelledby="prize-title"><form id="prize-form" method="dialog"><h2 id="prize-title">Familiens præmie</h2>
+  <label class="full" for="prize-input">Hvad venter på jer ved 20.000 sider? <input id="prize-input" name="prize" maxlength="200" placeholder="Fx en tur i sommerland"></label>
+  <div class="dialog-actions"><button type="button" class="secondary" data-close>Fortryd</button><button class="submit" value="save">Gem præmien</button></div></form></dialog>
 <script type="module" src="/app.js"></script></body></html>

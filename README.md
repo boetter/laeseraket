@@ -6,6 +6,15 @@ Appen er nu implementeret som en statisk, responsiv webapp med en lille Netlify 
 
 Bøger fra den første udgave (localStorage-nøglen `familielaeseraket-2026` og blob-store'en `familie-laeseraket`) migreres automatisk af `src/legacy.js` — både i browseren og i `/api/state`. Hvert gammelt numerisk id oversættes til det samme UUID hver gang, så den samme bog ikke bliver til en dublet, når flere enheder migrerer hver for sig. Migreringen er skrivebeskyttet: de gamle data røres ikke, og rettelser eller sletninger i v2 vinder altid over den migrerede udgave.
 
+### Raketten
+
+Forsiden er den animerede raketbane fra prototypen: stjernehimmel, optællende sidetæller, raket der glider mod planeten, milepæle ved 25/50/75 %, badges pr. læser, konfetti og små toner ved hver ny bog, og en fejringsskærm når de 20.000 sider er i hus. Fejrede milepæle huskes i `celebrated`, så de kun fyrer af én gang. Lyden kan slås fra med højttalerknappen, og `prefers-reduced-motion` slår både optælling og konfetti fra.
+
+To ting skal holdes i hævd, når forsiden ændres:
+
+- **Skrifttyperne er selvhostede** i `fonts/` (Fredoka og Atkinson Hyperlegible, begge OFL 1.1). CSP'en tillader kun `font-src 'self'`, så et link til Google Fonts vil blive afvist, og overskrifterne falder tilbage til systemets skrift.
+- **Inline `style`-attributter virker ikke.** CSP'en sætter `style-src 'self'` uden `'unsafe-inline'`, så alt der placerer raket, farver, søjler og stjerner skal sættes gennem CSSOM (`node.style.…`). Hjælperen `el()` i `app.js` gør det automatisk for `style`.
+
 > Appen har med vilje ingen loginbeskyttelse. Enhver med sidens adresse kan derfor se og ændre logbogen. Brug en svært gættelig Netlify-adresse, og del den kun med familien.
 
 ### Lokal udvikling
